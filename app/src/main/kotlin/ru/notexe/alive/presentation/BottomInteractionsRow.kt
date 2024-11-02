@@ -2,21 +2,28 @@ package ru.notexe.alive.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import ru.notexe.alive.presentation.contract.BigDropDownState
 import ru.notexe.alive.presentation.contract.BottomInteractionsActions
 import ru.notexe.alive.presentation.contract.PaintingMode
+import ru.notexe.alive.presentation.contract.SmallDropDownState
 import ru.notexe.alive.ui.theme.AliveColors
 import ru.notexe.alive.ui.theme.AliveTheme
 
@@ -25,27 +32,52 @@ internal fun ColumnScope.BottomInteractionsRow(
     currentColor: Color,
     currentPaintingMode: PaintingMode,
     bottomInteractionsActions: BottomInteractionsActions,
+    smallDropDown: SmallDropDownState?,
+    bigDropDown: BigDropDownState?,
 ) {
     Row(
         modifier = Modifier.align(Alignment.CenterHorizontally),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         PaintingMode.entries.forEach { mode ->
             ClickableIcon(
                 iconResource = mode.iconResource,
                 onClick = { bottomInteractionsActions.onPaintingModeChanged(mode) },
-                tint = iconColor(mode == currentPaintingMode),
+                tint = iconColor(mode == currentPaintingMode && smallDropDown == null),
             )
+            Spacer(modifier = Modifier.width(16.dp))
         }
+        val isPalletDropDownOpen = smallDropDown == SmallDropDownState.SMALL_PALLET
         Spacer(
             modifier = Modifier
-                .colorContrastBorder(
-                    currentColor == AliveTheme.tokens.background,
-                    borderColor = AliveTheme.tokens.primary
-                )
-                .size(28.dp)
+                .size(32.dp)
                 .clip(CircleShape)
-                .background(currentColor)
+                .clickable(onClick = bottomInteractionsActions::onColorChangeClick)
+                .colorContrastBorder(
+                    enable = currentColor == AliveTheme.tokens.background || isPalletDropDownOpen,
+                    borderColor = if (isPalletDropDownOpen) AliveColors.greenPallet.original else AliveTheme.tokens.primary
+                )
+                .background(
+                    color = currentColor,
+                    shape = CircleShape,
+                )
+        )
+
+        var smallDropDownHeight by remember { mutableStateOf(0.dp) }
+        SmallDropDown(
+            smallDropDown = smallDropDown,
+            isPalletActive = bigDropDown != null,
+            onPalletClick = bottomInteractionsActions::onPalletClick,
+            onColorClick = bottomInteractionsActions::onColorClick,
+            onDismiss = bottomInteractionsActions::onDropDownDismiss,
+            onHeightChange = { height ->
+                smallDropDownHeight = height
+            }
+        )
+        BigDropDown(
+            smallDropDownHeight = smallDropDownHeight,
+            bigDropDownState = bigDropDown,
+            onDismiss = bottomInteractionsActions::onDropDownDismiss,
+            onColorClick = bottomInteractionsActions::onColorClick,
         )
     }
 }
@@ -60,7 +92,7 @@ private fun Modifier.colorContrastBorder(
     if (enable) {
         Modifier
             .padding(
-                vertical = 1.dp
+                1.dp
             )
             .border(
                 width = 1.dp,
@@ -68,9 +100,9 @@ private fun Modifier.colorContrastBorder(
                 shape = CircleShape,
             )
     } else {
-        Modifier.padding(vertical = 2.dp)
+        Modifier.padding(2.dp)
     }
 )
 
 @Composable
-private fun iconColor(active: Boolean) = if (active) AliveColors.toxicGreen else AliveTheme.tokens.primary
+private fun iconColor(active: Boolean) = if (active) AliveColors.greenPallet.original else AliveTheme.tokens.primary

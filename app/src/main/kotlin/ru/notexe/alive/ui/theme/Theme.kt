@@ -27,7 +27,9 @@ internal fun AliveTheme(
         if (darkTheme) AliveTokens.dark() else AliveTokens.light()
     }
     val indication = remember {
-        ripple()
+        ripple(
+            color = tokens.primary,
+        )
     }
 
     CompositionLocalProvider(

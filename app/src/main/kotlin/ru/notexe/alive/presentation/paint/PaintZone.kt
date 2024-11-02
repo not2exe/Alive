@@ -13,28 +13,31 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
 import kotlinx.collections.immutable.ImmutableList
-import ru.notexe.alive.Line
+import kotlinx.collections.immutable.toImmutableList
 import ru.notexe.alive.R
+import ru.notexe.alive.presentation.applyIf
+import ru.notexe.alive.presentation.contract.Line
+import ru.notexe.alive.presentation.contract.PaintObject
+import ru.notexe.alive.presentation.contract.PaintingSettings
 import ru.notexe.alive.ui.theme.AliveTheme
 
 @Composable
 internal fun ColumnScope.PaintZone(
-    currentAnimationFrame: ImmutableList<Line>?,
-    color: Color,
-    strokeWidth: Dp,
+    paintingSettings: PaintingSettings,
+    framePaintObjects: ImmutableList<PaintObject>,
+    currentAnimationFrame: ImmutableList<PaintObject>?,
+    onNewPaintObjectAdded: (ImmutableList<Line>) -> Unit,
 ) {
-    val currentEditingFrame = remember {
-        mutableStateListOf<Line>()
-    }
+    val currentPaintObject = remember { mutableStateListOf<Line>() }
 
     Box(
         modifier = Modifier
@@ -51,35 +54,93 @@ internal fun ColumnScope.PaintZone(
         Spacer(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectDragGestures { change, dragAmount ->
-                        currentEditingFrame.add(
-                            Line(
-                                start = change.position - dragAmount,
-                                end = change.position,
-                            )
+                .applyIf(
+                    condition = currentAnimationFrame == null,
+                ) {
+                    pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragEnd = {
+                                onNewPaintObjectAdded(
+                                    currentPaintObject.toImmutableList(),
+                                )
+                                currentPaintObject.clear()
+                            },
+                            onDrag = { change, dragAmount ->
+                                currentPaintObject.add(
+                                    Line(
+                                        start = change.position - dragAmount,
+                                        end = change.position,
+                                    )
+                                )
+                            }
                         )
                     }
                 }
                 .drawWithCache {
-                    val paint = Paint().apply {
-                        this.color = color
-                        this.strokeWidth = strokeWidth.toPx()
-                        strokeCap = StrokeCap.Round
-                    }
-
+                    val paint = Paint()
                     onDrawBehind {
-                        drawIntoCanvas { canvas ->
-                            (currentAnimationFrame ?: currentEditingFrame).forEach { line ->
-                                canvas.drawLine(
-                                    p1 = line.start,
-                                    p2 = line.end,
-                                    paint = paint
-                                )
-                            }
-                        }
+                        drawFrame(
+                            paint = paint,
+                            frameToDraw = currentAnimationFrame ?: framePaintObjects,
+                            paintingSettings = paintingSettings,
+                            currentPaintObject = currentPaintObject
+                        )
                     }
                 }
         )
+    }
+}
+
+private fun DrawScope.drawFrame(
+    paint: Paint,
+    frameToDraw: ImmutableList<PaintObject>,
+    paintingSettings: PaintingSettings,
+    currentPaintObject: List<Line>,
+) {
+    drawIntoCanvas { canvas ->
+        canvas.nativeCanvas.apply {
+            val saveLayer = saveLayer(null, null)
+            painObject(
+                canvas = canvas,
+                paint = paint,
+                paintObjects = frameToDraw,
+            )
+            paint.apply {
+                color = paintingSettings.currentColor
+                strokeWidth = paintingSettings.strokeWidth.toPx()
+                strokeCap = paintingSettings.paintingMode.strokeCap
+                blendMode = paintingSettings.paintingMode.blendMode
+            }
+            currentPaintObject.forEach { line ->
+                canvas.drawLine(
+                    p1 = line.start,
+                    p2 = line.end,
+                    paint = paint,
+                )
+            }
+            restoreToCount(saveLayer)
+        }
+    }
+}
+
+private fun DrawScope.painObject(
+    canvas: Canvas,
+    paint: Paint,
+    paintObjects: ImmutableList<PaintObject>
+) {
+    paintObjects.forEach { paintObject ->
+        paint.apply {
+            strokeWidth = paintObject.strokeWidth.toPx()
+            strokeCap = paintObject.paintingMode.strokeCap
+            blendMode = paintObject.paintingMode.blendMode
+            color = paintObject.color
+        }
+        paintObject.lines.forEach { line ->
+            canvas.drawLine(
+                p1 = line.start,
+                p2 = line.end,
+                paint = paint,
+            )
+        }
     }
 }

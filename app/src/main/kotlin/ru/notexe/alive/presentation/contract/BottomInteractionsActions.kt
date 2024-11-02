@@ -1,10 +1,14 @@
 package ru.notexe.alive.presentation.contract
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.Color
 
 @Immutable
-interface BottomInteractionsActions {
+internal interface BottomInteractionsActions {
     fun onPaintingModeChanged(paintingMode: PaintingMode)
     fun onShapeAddClick()
-    fun onColorChanged()
+    fun onDropDownDismiss()
+    fun onPalletClick()
+    fun onColorClick(color: Color)
+    fun onColorChangeClick()
 }
