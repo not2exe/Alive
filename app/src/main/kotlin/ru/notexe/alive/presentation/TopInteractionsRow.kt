@@ -12,6 +12,10 @@ import ru.notexe.alive.presentation.contract.TopInteractionsActions
 
 @Composable
 internal fun TopInteractionsRow(
+    playEnabled: Boolean,
+    pauseEnabled: Boolean,
+    undoEnabled: Boolean,
+    redoEnabled: Boolean,
     topInteractionsActions: TopInteractionsActions,
 ) {
     Row(
@@ -21,11 +25,13 @@ internal fun TopInteractionsRow(
             iconResource = R.drawable.ic_arrow_left_24,
             onClick = topInteractionsActions::onUndoClick,
             innerPaddings = PaddingValues(4.dp),
+            enabled = undoEnabled,
         )
         ClickableIcon(
             iconResource = R.drawable.ic_arrow_right_24,
             onClick = topInteractionsActions::onRedoClick,
             innerPaddings = PaddingValues(4.dp),
+            enabled = redoEnabled,
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -47,11 +53,13 @@ internal fun TopInteractionsRow(
 
         ClickableIcon(
             iconResource = R.drawable.ic_pause_32,
-            onClick = topInteractionsActions::onRemoveClick,
+            onClick = topInteractionsActions::onPauseClick,
+            enabled = pauseEnabled,
         )
         ClickableIcon(
             iconResource = R.drawable.ic_play_32,
-            onClick = topInteractionsActions::onAddFrameClick,
+            onClick = topInteractionsActions::onPlayClick,
+            enabled = playEnabled,
         )
     }
 }

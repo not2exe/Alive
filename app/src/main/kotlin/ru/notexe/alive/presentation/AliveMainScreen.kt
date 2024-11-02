@@ -8,17 +8,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import ru.notexe.alive.presentation.contract.BottomInteractionsActions
-import ru.notexe.alive.presentation.contract.PaintingMode
-import ru.notexe.alive.presentation.contract.TopInteractionsActions
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.notexe.alive.presentation.paint.PaintZone
+import ru.notexe.alive.presentation.stateholder.AliveMainViewModel
 import ru.notexe.alive.ui.theme.AliveTheme
 
 @Composable
-internal fun AliveMainScreen() {
+internal fun AliveMainScreen(
+    aliveMainViewModel: AliveMainViewModel,
+) {
+    val state by aliveMainViewModel.screenState.collectAsStateWithLifecycle()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -28,61 +31,26 @@ internal fun AliveMainScreen() {
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         TopInteractionsRow(
-            topInteractionsActions = object :TopInteractionsActions{
-                override fun onUndoClick() {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onRedoClick() {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onRemoveClick() {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onAddFrameClick() {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onShowFramesClick() {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onPauseClick() {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onPlayClick() {
-                    TODO("Not yet implemented")
-                }
-
-            }
+            playEnabled = state.playEnabled,
+            pauseEnabled = state.pauseEnabled,
+            undoEnabled = state.undoEnabled,
+            redoEnabled = state.redoEnabled,
+            topInteractionsActions = aliveMainViewModel
         )
         Spacer(modifier = Modifier.height(32.dp))
         PaintZone(
-            currentAnimationFrame = null,
-            color = Color.Black,
-            strokeWidth = 4.dp,
+            paintingSettings = state.paintingSettings,
+            currentAnimationFrame = state.currentAnimationFrame,
+            onNewPaintObjectAdded = aliveMainViewModel::onNewPaintObjectAdded,
+            framePaintObjects = state.currentPaintingFrame,
         )
         Spacer(modifier = Modifier.height(22.dp))
         BottomInteractionsRow(
-            currentColor = Color.Black,
-            currentPaintingMode = PaintingMode.PENCIL,
-            bottomInteractionsActions = object : BottomInteractionsActions {
-                override fun onPaintingModeChanged(paintingMode: PaintingMode) {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onShapeAddClick() {
-                    TODO("Not yet implemented")
-                }
-
-                override fun onColorChanged() {
-                    TODO("Not yet implemented")
-                }
-
-            }
+            currentColor = state.paintingSettings.currentColor,
+            currentPaintingMode = state.paintingSettings.paintingMode,
+            bottomInteractionsActions = aliveMainViewModel,
+            smallDropDown = state.smallDropDownState,
+            bigDropDown = state.bigDropDown,
         )
         Spacer(modifier = Modifier.height(4.dp))
     }
