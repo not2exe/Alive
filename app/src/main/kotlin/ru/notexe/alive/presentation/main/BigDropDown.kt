@@ -1,4 +1,4 @@
-package ru.notexe.alive.presentation
+package ru.notexe.alive.presentation.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,9 +21,9 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import ru.notexe.alive.presentation.contract.BigDropDownState
+import ru.notexe.alive.presentation.main.contract.BigDropDownState
 import ru.notexe.alive.presentation.widgets.AliveDropDown
-import ru.notexe.alive.ui.theme.AliveColors
+import ru.notexe.alive.theme.AliveColors
 
 @Composable
 internal fun BigDropDown(

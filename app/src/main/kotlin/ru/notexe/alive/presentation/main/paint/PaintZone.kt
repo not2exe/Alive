@@ -1,4 +1,4 @@
-package ru.notexe.alive.presentation.paint
+package ru.notexe.alive.presentation.main.paint
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -9,12 +9,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.copy
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -25,19 +31,24 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.notexe.alive.R
 import ru.notexe.alive.presentation.applyIf
-import ru.notexe.alive.presentation.contract.LinePresentation
-import ru.notexe.alive.presentation.contract.PaintObjectPresentation
-import ru.notexe.alive.presentation.contract.PaintingSettings
-import ru.notexe.alive.ui.theme.AliveTheme
+import ru.notexe.alive.presentation.main.contract.ChangePresentation
+import ru.notexe.alive.presentation.main.contract.PaintObjectPresentation
+import ru.notexe.alive.presentation.main.contract.PaintingSettings
+import ru.notexe.alive.theme.AliveTheme
+
 
 @Composable
 internal fun ColumnScope.PaintZone(
     paintingSettings: PaintingSettings,
-    framePaintObjects: ImmutableList<PaintObjectPresentation>,
+    currentFrame: ImmutableList<PaintObjectPresentation>,
+    previousFrame: ImmutableList<PaintObjectPresentation>,
+    isAnimationPlaying: Boolean,
     currentAnimationFrame: ImmutableList<PaintObjectPresentation>?,
-    onNewPaintObjectAdded: (ImmutableList<LinePresentation>) -> Unit,
+    onNewPaintObjectAdded: (start: Offset, changes: ImmutableList<ChangePresentation>, path: Path) -> Unit,
 ) {
-    val currentPaintObject = remember { mutableStateListOf<LinePresentation>() }
+    val currentChanges = remember { mutableStateListOf<ChangePresentation>() }
+    val start = remember { mutableStateOf(Offset.Zero) }
+    val path = remember { mutableStateOf(Path()) }
 
     Box(
         modifier = Modifier
@@ -55,21 +66,28 @@ internal fun ColumnScope.PaintZone(
             modifier = Modifier
                 .fillMaxSize()
                 .applyIf(
-                    condition = currentAnimationFrame == null,
+                    condition = !isAnimationPlaying,
                 ) {
                     pointerInput(Unit) {
                         detectDragGestures(
+                            onDragStart = { offset: Offset ->
+                                start.value = offset
+                                path.value.moveTo(offset.x, offset.y)
+                            },
                             onDragEnd = {
                                 onNewPaintObjectAdded(
-                                    currentPaintObject.toImmutableList(),
+                                    start.value,
+                                    currentChanges.toImmutableList(),
+                                    path.value.copy()
                                 )
-                                currentPaintObject.clear()
+                                currentChanges.clear()
+                                path.value = Path()
                             },
-                            onDrag = { change, dragAmount ->
-                                currentPaintObject.add(
-                                    LinePresentation(
-                                        start = change.position - dragAmount,
-                                        end = change.position,
+                            onDrag = { _, dragAmount ->
+                                path.value.relativeLineTo(dragAmount.x, dragAmount.y)
+                                currentChanges.add(
+                                    ChangePresentation(
+                                        dragAmount = dragAmount,
                                     )
                                 )
                             }
@@ -79,11 +97,14 @@ internal fun ColumnScope.PaintZone(
                 .drawWithCache {
                     val paint = Paint()
                     onDrawBehind {
-                        drawFrame(
+                        drawPaintZone(
                             paint = paint,
-                            frameToDraw = currentAnimationFrame ?: framePaintObjects,
+                            currentFrame = currentAnimationFrame ?: currentFrame,
                             paintingSettings = paintingSettings,
-                            currentPaintObject = currentPaintObject
+                            currentPaintObject = currentChanges,
+                            previousFrame = if (!isAnimationPlaying) previousFrame else null,
+                            changes = currentChanges,
+                            currentPath = path.value,
                         )
                     }
                 }
@@ -91,42 +112,56 @@ internal fun ColumnScope.PaintZone(
     }
 }
 
-private fun DrawScope.drawFrame(
+private fun DrawScope.drawPaintZone(
     paint: Paint,
-    frameToDraw: ImmutableList<PaintObjectPresentation>,
+    currentFrame: ImmutableList<PaintObjectPresentation>,
+    previousFrame: ImmutableList<PaintObjectPresentation>?,
     paintingSettings: PaintingSettings,
-    currentPaintObject: List<LinePresentation>,
+    currentPaintObject: List<ChangePresentation>,
+    currentPath: Path,
+    changes: SnapshotStateList<ChangePresentation>,
 ) {
     drawIntoCanvas { canvas ->
+        println(changes)
         canvas.nativeCanvas.apply {
             val saveLayer = saveLayer(null, null)
-            painObject(
+            previousFrame?.let {
+                println(it)
+                drawFrame(
+                    canvas = canvas,
+                    paint = paint,
+                    paintObjects = previousFrame,
+                    alpha = 0.5f,
+                )
+            }
+            drawFrame(
                 canvas = canvas,
                 paint = paint,
-                paintObjects = frameToDraw,
+                paintObjects = currentFrame,
             )
             paint.apply {
                 color = paintingSettings.currentColor
                 strokeWidth = paintingSettings.strokeWidth.toPx()
                 strokeCap = paintingSettings.paintingMode.strokeCap
                 blendMode = paintingSettings.paintingMode.blendMode
+                style = PaintingStyle.Stroke
             }
-            currentPaintObject.forEach { line ->
-                canvas.drawLine(
-                    p1 = line.start,
-                    p2 = line.end,
-                    paint = paint,
-                )
-            }
+            // This is needed to retrigger draw when path is changing
+            currentPaintObject.forEach {}
+            canvas.drawPath(
+                path = currentPath,
+                paint = paint,
+            )
             restoreToCount(saveLayer)
         }
     }
 }
 
-private fun DrawScope.painObject(
+private fun DrawScope.drawFrame(
     canvas: Canvas,
     paint: Paint,
-    paintObjects: ImmutableList<PaintObjectPresentation>
+    paintObjects: ImmutableList<PaintObjectPresentation>,
+    alpha: Float = 1f,
 ) {
     paintObjects.forEach { paintObject ->
         paint.apply {
@@ -134,13 +169,12 @@ private fun DrawScope.painObject(
             strokeCap = paintObject.paintingMode.strokeCap
             blendMode = paintObject.paintingMode.blendMode
             color = paintObject.color
+            this.alpha = alpha
+            style = PaintingStyle.Stroke
         }
-        paintObject.lines.forEach { line ->
-            canvas.drawLine(
-                p1 = line.start,
-                p2 = line.end,
-                paint = paint,
-            )
-        }
+        canvas.drawPath(
+            path = paintObject.path,
+            paint = paint,
+        )
     }
 }

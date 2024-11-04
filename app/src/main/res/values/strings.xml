@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Alive</string>
+    <string name="generate">Сгенерировать</string>
+    <string name="generated">Сгенерировано: %1d</string>
+    <string name="deleting_in_progress">Удаление в процессе</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete_all">Удалить все</string>
+    <string name="generate_count">Количество кадров для генерации</string>
 </resources>

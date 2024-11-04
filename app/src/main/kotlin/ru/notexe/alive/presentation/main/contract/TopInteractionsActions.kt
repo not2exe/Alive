@@ -1,4 +1,4 @@
-package ru.notexe.alive.presentation.contract
+package ru.notexe.alive.presentation.main.contract
 
 import androidx.compose.runtime.Immutable
 

@@ -1,5 +1,6 @@
-package ru.notexe.alive.presentation
+package ru.notexe.alive.presentation.main
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,16 +10,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ru.notexe.alive.presentation.paint.PaintZone
-import ru.notexe.alive.presentation.stateholder.AliveMainViewModel
-import ru.notexe.alive.ui.theme.AliveTheme
+import ru.notexe.alive.presentation.main.paint.PaintZone
+import ru.notexe.alive.presentation.main.stateholder.AliveMainViewModel
+import ru.notexe.alive.presentation.settings.navigation.SettingsRoute
+import ru.notexe.alive.theme.AliveTheme
 
 @Composable
 internal fun AliveMainScreen(
     aliveMainViewModel: AliveMainViewModel,
+    onNavigate: (route: Any) -> Unit,
 ) {
     val state by aliveMainViewModel.screenState.collectAsStateWithLifecycle()
 
@@ -35,23 +39,34 @@ internal fun AliveMainScreen(
             pauseEnabled = state.pauseEnabled,
             undoEnabled = state.undoEnabled,
             redoEnabled = state.redoEnabled,
-            topInteractionsActions = aliveMainViewModel
+            isAnimationPlaying = state.isAnimationPlaying,
+            topInteractionsActions = aliveMainViewModel,
+            onSettingsClick = {
+                onNavigate(SettingsRoute)
+            }
         )
         Spacer(modifier = Modifier.height(32.dp))
         PaintZone(
             paintingSettings = state.paintingSettings,
             currentAnimationFrame = state.currentAnimationFrame,
             onNewPaintObjectAdded = aliveMainViewModel::onNewPaintObjectAdded,
-            framePaintObjects = state.currentPaintingFrame.paintObjects,
+            currentFrame = state.currentPaintingFrame.paintObjects,
+            previousFrame = state.previousPaintingFrame.paintObjects,
+            isAnimationPlaying = state.isAnimationPlaying,
         )
         Spacer(modifier = Modifier.height(22.dp))
-        BottomInteractionsRow(
-            currentColor = state.paintingSettings.currentColor,
-            currentPaintingMode = state.paintingSettings.paintingMode,
-            bottomInteractionsActions = aliveMainViewModel,
-            smallDropDown = state.smallDropDownState,
-            bigDropDown = state.bigDropDown,
-        )
+        AnimatedVisibility(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            visible = !state.isAnimationPlaying,
+        ) {
+            BottomInteractionsRow(
+                currentColor = state.paintingSettings.currentColor,
+                currentPaintingMode = state.paintingSettings.paintingMode,
+                bottomInteractionsActions = aliveMainViewModel,
+                smallDropDown = state.smallDropDownState,
+                bigDropDown = state.bigDropDown,
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
     }
 }

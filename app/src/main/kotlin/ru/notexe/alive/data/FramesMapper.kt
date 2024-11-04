@@ -2,12 +2,12 @@ package ru.notexe.alive.data
 
 import ru.notexe.alive.data.models.ColorPropertiesDto
 import ru.notexe.alive.data.models.FramesResponse
-import ru.notexe.alive.data.models.LineDto
+import ru.notexe.alive.data.models.ChangeDto
 import ru.notexe.alive.data.models.PaintModeDto
 import ru.notexe.alive.data.models.PaintObjectDto
 import ru.notexe.alive.domain.ColorProperties
 import ru.notexe.alive.domain.Frame
-import ru.notexe.alive.domain.Line
+import ru.notexe.alive.domain.Change
 import ru.notexe.alive.domain.PaintMode
 import ru.notexe.alive.domain.PaintObject
 import kotlin.uuid.ExperimentalUuidApi
@@ -29,7 +29,7 @@ internal class FramesMapper {
 
     private fun mapPaintObject(paintObject: PaintObjectDto): PaintObject {
         return PaintObject(
-            lines = paintObject.lines.map(::mapLine),
+            changes = paintObject.changes.map(::mapChange),
             colorProperties = paintObject.colorProperties.run {
                 ColorProperties(
                     red = red,
@@ -39,15 +39,15 @@ internal class FramesMapper {
                 )
             },
             lineStrokeWidth = paintObject.strokeWidth,
-            paintingMode = mapPaintMode(paintObject.paintMode)
+            paintingMode = mapPaintMode(paintObject.paintMode),
+            startX = paintObject.startX,
+            startY = paintObject.startY,
         )
     }
 
-    private fun mapLine(lineDto: LineDto): Line = Line(
-        startX = lineDto.startX,
-        startY = lineDto.startY,
-        endX = lineDto.endX,
-        endY = lineDto.endY
+    private fun mapChange(changeDto: ChangeDto): Change = Change(
+        dragAmountX = changeDto.dragAmountX,
+        dragAmountY = changeDto.dragAmountY,
     )
 
     private fun mapPaintMode(paintModeDto: PaintModeDto) = when (paintModeDto) {
@@ -64,12 +64,12 @@ internal class FramesMapper {
     ): PaintObjectDto = PaintObjectDto(
         id = Uuid.random().toString(),
         frameId = frameId,
-        lines = paintObject.lines.map { line ->
-            LineDto(
-                startX = line.startX,
-                startY = line.startY,
-                endX = line.endX,
-                endY = line.endY,
+        startX = paintObject.startX,
+        startY = paintObject.startY,
+        changes = paintObject.changes.map { change ->
+            ChangeDto(
+                dragAmountX = change.dragAmountX,
+                dragAmountY = change.dragAmountY,
             )
         },
         colorProperties = paintObject.colorProperties.run {

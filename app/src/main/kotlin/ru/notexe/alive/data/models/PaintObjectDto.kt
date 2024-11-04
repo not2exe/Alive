@@ -19,7 +19,7 @@ import ru.notexe.alive.data.FramesDatabase
     ],
     indices = []
 )
-internal class PaintObjectDto(
+internal data class PaintObjectDto(
     @PrimaryKey
     val id: String,
     @ColumnInfo(
@@ -27,8 +27,12 @@ internal class PaintObjectDto(
         index = true
     )
     val frameId: Long,
-    @ColumnInfo("lines")
-    val lines: List<LineDto>,
+    @ColumnInfo("start_x")
+    val startX: Float,
+    @ColumnInfo("start_y")
+    val startY: Float,
+    @ColumnInfo("changes")
+    val changes: List<ChangeDto>,
     @Embedded
     val colorProperties: ColorPropertiesDto,
     @ColumnInfo("paint_mode")

@@ -1,21 +1,22 @@
-package ru.notexe.alive.presentation.contract
+package ru.notexe.alive.presentation.main.contract
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import ru.notexe.alive.R
-import ru.notexe.alive.presentation.FramePresentation
 
 @Immutable
 internal data class AliveMainState(
     val currentPaintingFrame: FramePresentation = FramePresentation(),
+    val previousPaintingFrame: FramePresentation = FramePresentation(),
     val redoList: ImmutableList<PaintObjectPresentation> = persistentListOf(),
     val paintingSettings: PaintingSettings = PaintingSettings(),
     val currentAnimationFrame: ImmutableList<PaintObjectPresentation>? = null,
@@ -80,7 +81,9 @@ internal enum class PaintingMode(
 
 @Immutable
 internal data class PaintObjectPresentation(
-    val lines: ImmutableList<LinePresentation>,
+    val path: Path,
+    val start: Offset,
+    val changes: ImmutableList<ChangePresentation>,
     val color: Color,
     val strokeWidth: Dp,
     val paintingMode: PaintingMode,
@@ -88,9 +91,8 @@ internal data class PaintObjectPresentation(
 
 
 @Immutable
-internal data class LinePresentation(
-    val start: Offset,
-    val end: Offset,
+internal data class ChangePresentation(
+    val dragAmount: Offset,
 )
 
 internal enum class SmallDropDownState {

@@ -1,6 +1,9 @@
-package ru.notexe.alive.presentation.stateholder
+package ru.notexe.alive.presentation.main.stateholder
 
+import android.util.Log
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,16 +20,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.notexe.alive.domain.Frame
 import ru.notexe.alive.domain.FramesRepository
-import ru.notexe.alive.presentation.FramePresentation
-import ru.notexe.alive.presentation.FramesPresentationMapper
-import ru.notexe.alive.presentation.contract.AliveMainState
-import ru.notexe.alive.presentation.contract.BigDropDownState
-import ru.notexe.alive.presentation.contract.BottomInteractionsActions
-import ru.notexe.alive.presentation.contract.LinePresentation
-import ru.notexe.alive.presentation.contract.PaintObjectPresentation
-import ru.notexe.alive.presentation.contract.PaintingMode
-import ru.notexe.alive.presentation.contract.SmallDropDownState
-import ru.notexe.alive.presentation.contract.TopInteractionsActions
+import ru.notexe.alive.presentation.main.contract.FramePresentation
+import ru.notexe.alive.presentation.main.contract.AliveMainState
+import ru.notexe.alive.presentation.main.contract.BigDropDownState
+import ru.notexe.alive.presentation.main.contract.BottomInteractionsActions
+import ru.notexe.alive.presentation.main.contract.ChangePresentation
+import ru.notexe.alive.presentation.main.contract.PaintObjectPresentation
+import ru.notexe.alive.presentation.main.contract.PaintingMode
+import ru.notexe.alive.presentation.main.contract.SmallDropDownState
+import ru.notexe.alive.presentation.main.contract.TopInteractionsActions
 
 internal class AliveMainViewModel(
     private val framesRepository: FramesRepository,
@@ -46,7 +48,11 @@ internal class AliveMainViewModel(
 
     val screenState = _screenState.asStateFlow()
 
-    fun onNewPaintObjectAdded(lines: ImmutableList<LinePresentation>) {
+    fun onNewPaintObjectAdded(
+        start: Offset,
+        changes: ImmutableList<ChangePresentation>,
+        path: Path,
+    ) {
         _screenState.update { state ->
             state.copy(
                 currentPaintingFrame = state
@@ -54,10 +60,12 @@ internal class AliveMainViewModel(
                     .updatePaintObjects {
                         add(
                             PaintObjectPresentation(
-                                lines = lines,
+                                path = path,
                                 color = state.paintingSettings.currentColor,
                                 strokeWidth = state.paintingSettings.strokeWidth,
                                 paintingMode = state.paintingSettings.paintingMode,
+                                changes = changes,
+                                start = start,
                             )
                         )
                     }
@@ -101,33 +109,28 @@ internal class AliveMainViewModel(
         viewModelScope.launch {
             val currentFrame = screenState.value.currentPaintingFrame
             if (currentFrame.isNew) {
-                handleRemoveNew()
+                updateCurrentAndPrevious(framesRepository.currentPackFrames.value)
                 return@launch
             }
 
-            framesRepository.deleteFrameById(currentFrame.id).onSuccess { framePack ->
-                _screenState.update { state ->
-                    state.copy(
-                        currentPaintingFrame = framePack
-                            .lastOrNull()
-                            ?.let(framesPresentationMapper::mapFrame) ?: FramePresentation(),
-                    )
+            framesRepository
+                .deleteFrameById(currentFrame.id)
+                .onSuccess { framePack ->
+                    updateCurrentAndPrevious(framePack)
                 }
-            }
         }
     }
 
     override fun onAddFrameClick() {
         val currentFrame = screenState.value.currentPaintingFrame
-        if (currentFrame.paintObjects.isEmpty()) {
-            return
-        }
         viewModelScope.launch {
             addOrUpdateFrame(currentFrame = currentFrame)
                 .onSuccess {
+                    val last = framesRepository.currentPackFrames.value.lastOrNull()?.let(framesPresentationMapper::mapFrame)
                     _screenState.update { state ->
                         state.copy(
                             currentPaintingFrame = FramePresentation(),
+                            previousPaintingFrame = last ?: FramePresentation(),
                         )
                     }
                 }
@@ -243,16 +246,13 @@ internal class AliveMainViewModel(
         frames: List<FramePresentation>,
     ) {
         val lastFrameId = frames.lastOrNull()?.id ?: 0
-        if (frames.size < FramesRepository.PAGE_SIZE / 2) {
-            loadNextPack(lastFrameId)
-        }
         frames.forEachIndexed { index, frame ->
             if (!screenState.value.isAnimationPlaying) {
                 parentScope.cancel()
                 return
             }
 
-            if (frames.size - index == FramesRepository.PAGE_SIZE / 2) {
+            if (frames.size - index.toLong() == FramesRepository.PAGE_SIZE / 2) {
                 loadNextPack(lastFrameId)
             }
 
@@ -303,15 +303,12 @@ internal class AliveMainViewModel(
     }
 
     private fun loadInitialPack() = viewModelScope.launch {
-        val last = framesRepository.loadInitialPack()?.lastOrNull() ?: return@launch
-        _screenState.update { state ->
-            state.copy(
-                currentPaintingFrame = framesPresentationMapper.mapFrame(last)
-            )
-        }
+        val pack = framesRepository.loadInitialPack().orEmpty()
+        updateCurrentAndPrevious(pack)
     }
 
     private suspend fun addOrUpdateFrame(currentFrame: FramePresentation): Result<List<Frame>> {
+        if (currentFrame.paintObjects.isEmpty()) return Result.failure(Exception())
         val domainFrame = framesPresentationMapper.mapPaintObjectsToDomainFrame(currentFrame)
         return if (currentFrame.isNew) {
             framesRepository.addFrame(
@@ -322,11 +319,11 @@ internal class AliveMainViewModel(
         }
     }
 
-    private fun handleRemoveNew() {
-        val last = framesRepository.currentPackFrames.value.lastOrNull()?.let(framesPresentationMapper::mapFrame)
+    private fun updateCurrentAndPrevious(framesPack: List<Frame>) {
         _screenState.update { state ->
             state.copy(
-                currentPaintingFrame = last ?: FramePresentation(),
+                currentPaintingFrame = framesPack.getOrNull(framesPack.lastIndex)?.let(framesPresentationMapper::mapFrame) ?: FramePresentation(),
+                previousPaintingFrame = framesPack.getOrNull(framesPack.lastIndex - 1)?.let(framesPresentationMapper::mapFrame) ?: FramePresentation(),
             )
         }
     }
