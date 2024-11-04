@@ -1,4 +1,4 @@
-package ru.notexe.alive.presentation
+package ru.notexe.alive.presentation.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,10 +21,11 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.persistentListOf
 import ru.notexe.alive.R
-import ru.notexe.alive.presentation.contract.SmallDropDownState
+import ru.notexe.alive.presentation.ClickableIcon
+import ru.notexe.alive.presentation.main.contract.SmallDropDownState
 import ru.notexe.alive.presentation.widgets.AliveDropDown
-import ru.notexe.alive.ui.theme.AliveColors
-import ru.notexe.alive.ui.theme.AliveTheme
+import ru.notexe.alive.theme.AliveColors
+import ru.notexe.alive.theme.AliveTheme
 
 @Composable
 internal fun SmallDropDown(

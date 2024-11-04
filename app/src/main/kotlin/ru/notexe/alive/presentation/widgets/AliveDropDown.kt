@@ -13,8 +13,8 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import ru.notexe.alive.ui.theme.AliveColors
-import ru.notexe.alive.ui.theme.AliveTheme
+import ru.notexe.alive.theme.AliveColors
+import ru.notexe.alive.theme.AliveTheme
 
 @Composable
 internal fun AliveDropDown(

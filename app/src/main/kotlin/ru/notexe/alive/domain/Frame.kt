@@ -1,13 +1,9 @@
 package ru.notexe.alive.domain
 
-import kotlinx.serialization.Serializable
-
 internal data class Frame(
     val id: Long,
     val paintObjects: List<PaintObject>,
-) {
-
-}
+)
 
 internal data class ColorProperties(
     val red: Float,
@@ -17,18 +13,17 @@ internal data class ColorProperties(
 )
 
 internal data class PaintObject(
-    val lines: List<Line>,
+    val startX: Float,
+    val startY: Float,
+    val changes: List<Change>,
     val colorProperties: ColorProperties,
     val lineStrokeWidth: Float,
     val paintingMode: PaintMode,
 )
 
-@Serializable
-internal data class Line(
-    val startX: Float,
-    val startY: Float,
-    val endX: Float,
-    val endY: Float,
+internal data class Change(
+    val dragAmountX: Float,
+    val dragAmountY: Float,
 )
 
 enum class PaintMode {

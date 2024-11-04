@@ -1,9 +1,8 @@
-package ru.notexe.alive.presentation
+package ru.notexe.alive.presentation.main.contract
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import ru.notexe.alive.presentation.contract.PaintObjectPresentation
 
 internal data class FramePresentation(
     val id: Long = NEW_FRAME_ID,

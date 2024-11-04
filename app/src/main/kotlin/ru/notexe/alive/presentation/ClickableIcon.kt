@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import ru.notexe.alive.ui.theme.AliveTheme
+import ru.notexe.alive.theme.AliveTheme
 
 @Composable
 internal fun ClickableIcon(

@@ -5,6 +5,7 @@ import org.koin.dsl.module
 import ru.notexe.alive.data.FramesMapper
 import ru.notexe.alive.data.FramesRepositoryImpl
 import ru.notexe.alive.domain.FramesRepository
+import ru.notexe.alive.domain.SettingsRepository
 
 fun domainModule() = module {
     single {
@@ -15,4 +16,6 @@ fun domainModule() = module {
         )
     } bind FramesRepository::class
     factory { FramesMapper() }
+
+    single { SettingsRepository(get(), get()) }
 }

@@ -1,4 +1,4 @@
-package ru.notexe.alive
+package ru.notexe.alive.utils
 
 import kotlin.coroutines.cancellation.CancellationException
 

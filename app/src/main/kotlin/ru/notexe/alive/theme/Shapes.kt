@@ -1,4 +1,4 @@
-package ru.notexe.alive.ui.theme
+package ru.notexe.alive.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Immutable

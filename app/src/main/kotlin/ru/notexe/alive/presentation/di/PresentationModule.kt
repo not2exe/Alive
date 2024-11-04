@@ -2,8 +2,9 @@ package ru.notexe.alive.presentation.di
 
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
-import ru.notexe.alive.presentation.FramesPresentationMapper
-import ru.notexe.alive.presentation.stateholder.AliveMainViewModel
+import ru.notexe.alive.presentation.main.stateholder.FramesPresentationMapper
+import ru.notexe.alive.presentation.main.stateholder.AliveMainViewModel
+import ru.notexe.alive.presentation.settings.stateholder.SettingsViewModel
 
 internal fun presentationModule() = module {
     viewModel {
@@ -13,4 +14,10 @@ internal fun presentationModule() = module {
         )
     }
     factory { FramesPresentationMapper() }
+
+    viewModel {
+        SettingsViewModel(
+            settingsRepository = get(),
+        )
+    }
 }

@@ -13,10 +13,10 @@ import ru.notexe.alive.data.models.PaintObjectDto
 internal interface FramesDao {
 
     @Transaction
-    @Query("SELECT * FROM ${FramesDatabase.FRAME_TABLE} WHERE id BETWEEN :from AND :last")
+    @Query("SELECT * FROM ${FramesDatabase.FRAME_TABLE} WHERE id > :from LIMIT :limit")
     suspend fun getFrames(
         from: Long,
-        last: Long,
+        limit: Long,
     ): List<FramesResponse>
 
     @Query("SELECT COUNT(*) FROM ${FramesDatabase.FRAME_TABLE}")
@@ -29,6 +29,9 @@ internal interface FramesDao {
     suspend fun addFrame(frameDto: FrameDto = FrameDto(0)): Long
 
     @Insert
+    suspend fun addFrames(frames: List<FrameDto>): List<Long>
+
+    @Insert
     suspend fun insertPaintObjects(paintObject: List<PaintObjectDto>): List<Long>
 
     @Query("DELETE FROM ${FramesDatabase.FRAME_TABLE} WHERE id = :id")
@@ -36,4 +39,7 @@ internal interface FramesDao {
 
     @Query("DELETE FROM ${FramesDatabase.PAINT_OBJECTS_TABLE} WHERE frame_id =:frameId")
     suspend fun deletePaintObjectsById(frameId: Long)
+
+    @Query("DELETE FROM ${FramesDatabase.FRAME_TABLE}")
+    suspend fun deleteAll()
 }

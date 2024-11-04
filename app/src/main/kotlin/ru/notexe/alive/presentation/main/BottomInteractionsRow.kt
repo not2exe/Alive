@@ -1,4 +1,4 @@
-package ru.notexe.alive.presentation
+package ru.notexe.alive.presentation.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,12 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import ru.notexe.alive.presentation.contract.BigDropDownState
-import ru.notexe.alive.presentation.contract.BottomInteractionsActions
-import ru.notexe.alive.presentation.contract.PaintingMode
-import ru.notexe.alive.presentation.contract.SmallDropDownState
-import ru.notexe.alive.ui.theme.AliveColors
-import ru.notexe.alive.ui.theme.AliveTheme
+import ru.notexe.alive.presentation.ClickableIcon
+import ru.notexe.alive.presentation.main.contract.BigDropDownState
+import ru.notexe.alive.presentation.main.contract.BottomInteractionsActions
+import ru.notexe.alive.presentation.main.contract.PaintingMode
+import ru.notexe.alive.presentation.main.contract.SmallDropDownState
+import ru.notexe.alive.theme.AliveColors
+import ru.notexe.alive.theme.AliveTheme
 
 @Composable
 internal fun ColumnScope.BottomInteractionsRow(
@@ -35,9 +36,7 @@ internal fun ColumnScope.BottomInteractionsRow(
     smallDropDown: SmallDropDownState?,
     bigDropDown: BigDropDownState?,
 ) {
-    Row(
-        modifier = Modifier.align(Alignment.CenterHorizontally),
-    ) {
+    Row {
         PaintingMode.entries.forEach { mode ->
             ClickableIcon(
                 iconResource = mode.iconResource,
