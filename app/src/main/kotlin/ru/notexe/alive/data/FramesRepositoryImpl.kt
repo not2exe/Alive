@@ -27,9 +27,6 @@ internal class FramesRepositoryImpl(
     private val framesMapper: FramesMapper,
 ) : FramesRepository {
 
-    override val currentFrameIndex: StateFlow<Int>
-        get() = TODO("Not yet implemented")
-
     private val _currentPackFrames = MutableStateFlow<List<Frame>>(
         listOf()
     )
@@ -126,6 +123,12 @@ internal class FramesRepositoryImpl(
             return@withContext Result.success(currentPackFrames.value)
         }
         Result.failure(result.exceptionOrNull() ?: IllegalStateException())
+    }
+
+    override fun clearCurrentPack() {
+        _currentPackFrames.update {
+            listOf()
+        }
     }
 
     override suspend fun deleteFrameById(id: Long) = withContext(Dispatchers.IO) {

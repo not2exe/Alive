@@ -24,6 +24,7 @@ import kotlin.uuid.Uuid
 internal class SettingsRepository(
     private val framesDao: FramesDao,
     private val framesDatabase: FramesDatabase,
+    private val framesRepository: FramesRepository,
 ) {
     private val _generatedFramesCount = MutableStateFlow<Int>(0)
     val generatedFramesCount: Flow<Int> = _generatedFramesCount.asStateFlow()
@@ -88,6 +89,7 @@ internal class SettingsRepository(
 
     suspend fun deleteAll() = withContext(Dispatchers.IO) {
         framesDao.deleteAll()
+        framesRepository.clearCurrentPack()
     }
 
     companion object {

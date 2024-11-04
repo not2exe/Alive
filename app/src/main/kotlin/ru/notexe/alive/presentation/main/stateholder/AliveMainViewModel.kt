@@ -47,6 +47,19 @@ internal class AliveMainViewModel(
 
     val screenState = _screenState.asStateFlow()
 
+    fun updateState() {
+        val currentPack = framesRepository.currentPackFrames.value
+        if (screenState.value.currentPaintingFrame.isNew) {
+            _screenState.update {
+                it.copy(
+                    previousPaintingFrame = currentPack.lastOrNull()?.let(framesPresentationMapper::mapFrame) ?: FramePresentation()
+                )
+            }
+        } else {
+            updateCurrentAndPrevious(currentPack)
+        }
+    }
+
     fun onNewPaintObjectAdded(
         start: Offset,
         changes: ImmutableList<ChangePresentation>,
@@ -127,10 +140,6 @@ internal class AliveMainViewModel(
 
     override fun onDoubleClick() {
         addFrameInternal(doubleCurrent = true)
-    }
-
-    override fun onShowFramesClick() {
-        TODO("Not yet implemented")
     }
 
     override fun onPauseClick() {

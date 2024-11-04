@@ -8,7 +8,6 @@ interface TopInteractionsActions {
     fun onRedoClick()
     fun onRemoveClick()
     fun onAddFrameClick()
-    fun onShowFramesClick()
     fun onPauseClick()
     fun onPlayClick()
     fun onDoubleClick()

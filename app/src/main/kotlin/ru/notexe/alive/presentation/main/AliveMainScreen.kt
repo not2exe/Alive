@@ -1,7 +1,6 @@
 package ru.notexe.alive.presentation.main
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +31,9 @@ internal fun AliveMainScreen(
 ) {
     val state by aliveMainViewModel.screenState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        aliveMainViewModel.updateState()
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()

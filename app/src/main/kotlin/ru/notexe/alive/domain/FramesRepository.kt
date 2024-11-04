@@ -5,8 +5,6 @@ import kotlinx.coroutines.flow.StateFlow
 
 internal interface FramesRepository {
 
-    val currentFrameIndex: StateFlow<Int>
-
     val currentPackFrames: StateFlow<List<Frame>>
 
     val animationPackFramesFlow: Flow<List<Frame>>
@@ -31,6 +29,8 @@ internal interface FramesRepository {
     suspend fun updateFrame(frame: Frame): Result<List<Frame>>
 
     suspend fun deleteFrameById(id: Long): Result<List<Frame>>
+
+    fun clearCurrentPack()
 
     companion object {
         const val PAGE_SIZE = 150L
