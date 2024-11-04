@@ -30,6 +30,8 @@ internal interface FramesRepository {
 
     suspend fun deleteFrameById(id: Long): Result<List<Frame>>
 
+    fun clearCurrentPack()
+
     companion object {
         const val PAGE_SIZE = 150L
     }

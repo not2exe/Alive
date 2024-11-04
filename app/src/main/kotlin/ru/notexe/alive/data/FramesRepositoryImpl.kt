@@ -125,6 +125,12 @@ internal class FramesRepositoryImpl(
         Result.failure(result.exceptionOrNull() ?: IllegalStateException())
     }
 
+    override fun clearCurrentPack() {
+        _currentPackFrames.update {
+            listOf()
+        }
+    }
+
     override suspend fun deleteFrameById(id: Long) = withContext(Dispatchers.IO) {
         if (framesDao.deleteFrameById(id) < 1) {
             Result.failure<List<Frame>>(Exception("Frame was not deleted"))
@@ -136,6 +142,11 @@ internal class FramesRepositoryImpl(
                     .takeIf { it != -1 }
                 indexToRemove?.let(::removeAt)
             }
+        }
+        if (currentPackFrames.value.size == LOAD_PREVIOUS_TRESHOLD) {
+            loadPrevious(
+                firstLoadedId = currentPackFrames.value.first().id
+            )
         }
 
         Result.success(currentPackFrames.value)
@@ -198,5 +209,6 @@ internal class FramesRepositoryImpl(
 
     companion object {
         const val NOT_INSERTED_VALUE = -1L
+        const val LOAD_PREVIOUS_TRESHOLD = 10
     }
 }

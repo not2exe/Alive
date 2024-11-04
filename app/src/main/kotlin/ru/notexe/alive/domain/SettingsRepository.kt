@@ -24,6 +24,7 @@ import kotlin.uuid.Uuid
 internal class SettingsRepository(
     private val framesDao: FramesDao,
     private val framesDatabase: FramesDatabase,
+    private val framesRepository: FramesRepository,
 ) {
     private val _generatedFramesCount = MutableStateFlow<Int>(0)
     val generatedFramesCount: Flow<Int> = _generatedFramesCount.asStateFlow()
@@ -56,8 +57,8 @@ internal class SettingsRepository(
                 strokeWidth = 6f,
                 paintMode = PaintModeDto.PENCIL,
             )
-            offsetSaltX += (Random.nextFloat() % 100f)
-            offsetSaltY += (Random.nextFloat() % 100f)
+            offsetSaltX += (Random.nextFloat() * 10 % 100f)
+            offsetSaltY += (Random.nextFloat() * 10 % 100f)
             if (offsetSaltX >= 200f) {
                 offsetSaltX = 0f
             }
@@ -88,6 +89,7 @@ internal class SettingsRepository(
 
     suspend fun deleteAll() = withContext(Dispatchers.IO) {
         framesDao.deleteAll()
+        framesRepository.clearCurrentPack()
     }
 
     companion object {

@@ -17,5 +17,5 @@ fun domainModule() = module {
     } bind FramesRepository::class
     factory { FramesMapper() }
 
-    single { SettingsRepository(get(), get()) }
+    single { SettingsRepository(get(), get(), get()) }
 }
