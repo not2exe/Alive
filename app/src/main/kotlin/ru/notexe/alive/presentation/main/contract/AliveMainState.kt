@@ -24,6 +24,7 @@ internal data class AliveMainState(
     val framesCount: Long = 0,
     val smallDropDownState: SmallDropDownState? = null,
     val bigDropDown: BigDropDownState? = null,
+    val loading: Boolean = false,
 ) {
     val redoEnabled: Boolean
         get() = redoList.isNotEmpty()

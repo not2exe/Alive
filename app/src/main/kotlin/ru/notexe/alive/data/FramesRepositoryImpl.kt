@@ -27,6 +27,9 @@ internal class FramesRepositoryImpl(
     private val framesMapper: FramesMapper,
 ) : FramesRepository {
 
+    override val currentFrameIndex: StateFlow<Int>
+        get() = TODO("Not yet implemented")
+
     private val _currentPackFrames = MutableStateFlow<List<Frame>>(
         listOf()
     )
@@ -137,6 +140,11 @@ internal class FramesRepositoryImpl(
                 indexToRemove?.let(::removeAt)
             }
         }
+        if (currentPackFrames.value.size == LOAD_PREVIOUS_TRESHOLD) {
+            loadPrevious(
+                firstLoadedId = currentPackFrames.value.first().id
+            )
+        }
 
         Result.success(currentPackFrames.value)
     }
@@ -198,5 +206,6 @@ internal class FramesRepositoryImpl(
 
     companion object {
         const val NOT_INSERTED_VALUE = -1L
+        const val LOAD_PREVIOUS_TRESHOLD = 10
     }
 }

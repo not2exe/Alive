@@ -56,8 +56,8 @@ internal class SettingsRepository(
                 strokeWidth = 6f,
                 paintMode = PaintModeDto.PENCIL,
             )
-            offsetSaltX += (Random.nextFloat() % 100f)
-            offsetSaltY += (Random.nextFloat() % 100f)
+            offsetSaltX += (Random.nextFloat() * 10 % 100f)
+            offsetSaltY += (Random.nextFloat() * 10 % 100f)
             if (offsetSaltX >= 200f) {
                 offsetSaltX = 0f
             }

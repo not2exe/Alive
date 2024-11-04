@@ -11,4 +11,5 @@ interface TopInteractionsActions {
     fun onShowFramesClick()
     fun onPauseClick()
     fun onPlayClick()
+    fun onDoubleClick()
 }

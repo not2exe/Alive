@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 internal interface FramesRepository {
 
+    val currentFrameIndex: StateFlow<Int>
+
     val currentPackFrames: StateFlow<List<Frame>>
 
     val animationPackFramesFlow: Flow<List<Frame>>

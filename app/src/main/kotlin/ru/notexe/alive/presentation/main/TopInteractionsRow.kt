@@ -1,6 +1,5 @@
 package ru.notexe.alive.presentation.main
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -59,6 +58,10 @@ internal fun ColumnScope.TopInteractionsRow(
             ClickableIcon(
                 iconResource = R.drawable.ic_settings_32,
                 onClick = onSettingsClick,
+            )
+            ClickableIcon(
+                iconResource = R.drawable.ic_stack_28,
+                onClick = topInteractionsActions::onDoubleClick,
             )
 
             Spacer(modifier = Modifier.weight(1f))
