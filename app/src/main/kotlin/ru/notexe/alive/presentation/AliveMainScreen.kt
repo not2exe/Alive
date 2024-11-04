@@ -42,7 +42,7 @@ internal fun AliveMainScreen(
             paintingSettings = state.paintingSettings,
             currentAnimationFrame = state.currentAnimationFrame,
             onNewPaintObjectAdded = aliveMainViewModel::onNewPaintObjectAdded,
-            framePaintObjects = state.currentPaintingFrame,
+            framePaintObjects = state.currentPaintingFrame.paintObjects,
         )
         Spacer(modifier = Modifier.height(22.dp))
         BottomInteractionsRow(
