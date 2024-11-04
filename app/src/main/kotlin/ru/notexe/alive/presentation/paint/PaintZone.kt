@@ -25,19 +25,19 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.notexe.alive.R
 import ru.notexe.alive.presentation.applyIf
-import ru.notexe.alive.presentation.contract.Line
-import ru.notexe.alive.presentation.contract.PaintObject
+import ru.notexe.alive.presentation.contract.LinePresentation
+import ru.notexe.alive.presentation.contract.PaintObjectPresentation
 import ru.notexe.alive.presentation.contract.PaintingSettings
 import ru.notexe.alive.ui.theme.AliveTheme
 
 @Composable
 internal fun ColumnScope.PaintZone(
     paintingSettings: PaintingSettings,
-    framePaintObjects: ImmutableList<PaintObject>,
-    currentAnimationFrame: ImmutableList<PaintObject>?,
-    onNewPaintObjectAdded: (ImmutableList<Line>) -> Unit,
+    framePaintObjects: ImmutableList<PaintObjectPresentation>,
+    currentAnimationFrame: ImmutableList<PaintObjectPresentation>?,
+    onNewPaintObjectAdded: (ImmutableList<LinePresentation>) -> Unit,
 ) {
-    val currentPaintObject = remember { mutableStateListOf<Line>() }
+    val currentPaintObject = remember { mutableStateListOf<LinePresentation>() }
 
     Box(
         modifier = Modifier
@@ -67,7 +67,7 @@ internal fun ColumnScope.PaintZone(
                             },
                             onDrag = { change, dragAmount ->
                                 currentPaintObject.add(
-                                    Line(
+                                    LinePresentation(
                                         start = change.position - dragAmount,
                                         end = change.position,
                                     )
@@ -93,9 +93,9 @@ internal fun ColumnScope.PaintZone(
 
 private fun DrawScope.drawFrame(
     paint: Paint,
-    frameToDraw: ImmutableList<PaintObject>,
+    frameToDraw: ImmutableList<PaintObjectPresentation>,
     paintingSettings: PaintingSettings,
-    currentPaintObject: List<Line>,
+    currentPaintObject: List<LinePresentation>,
 ) {
     drawIntoCanvas { canvas ->
         canvas.nativeCanvas.apply {
@@ -126,7 +126,7 @@ private fun DrawScope.drawFrame(
 private fun DrawScope.painObject(
     canvas: Canvas,
     paint: Paint,
-    paintObjects: ImmutableList<PaintObject>
+    paintObjects: ImmutableList<PaintObjectPresentation>
 ) {
     paintObjects.forEach { paintObject ->
         paint.apply {

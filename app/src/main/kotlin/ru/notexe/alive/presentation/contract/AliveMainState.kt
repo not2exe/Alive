@@ -11,14 +11,16 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import ru.notexe.alive.R
+import ru.notexe.alive.presentation.FramePresentation
 
 @Immutable
 internal data class AliveMainState(
-    val currentPaintingFrame: ImmutableList<PaintObject> = persistentListOf(),
-    val redoList: ImmutableList<PaintObject> = persistentListOf(),
+    val currentPaintingFrame: FramePresentation = FramePresentation(),
+    val redoList: ImmutableList<PaintObjectPresentation> = persistentListOf(),
     val paintingSettings: PaintingSettings = PaintingSettings(),
-    val currentAnimationFrame: ImmutableList<PaintObject>? = null,
-    val playEnabled: Boolean = false,
+    val currentAnimationFrame: ImmutableList<PaintObjectPresentation>? = null,
+    val isAnimationPlaying: Boolean = false,
+    val framesCount: Long = 0,
     val smallDropDownState: SmallDropDownState? = null,
     val bigDropDown: BigDropDownState? = null,
 ) {
@@ -26,10 +28,13 @@ internal data class AliveMainState(
         get() = redoList.isNotEmpty()
 
     val undoEnabled: Boolean
-        get() = currentPaintingFrame.isNotEmpty()
+        get() = currentPaintingFrame.paintObjects.isNotEmpty()
 
     val pauseEnabled: Boolean
-        get() = currentAnimationFrame != null
+        get() = isAnimationPlaying
+
+    val playEnabled: Boolean
+        get() = !isAnimationPlaying && framesCount > 1
 }
 
 @Immutable
@@ -74,8 +79,8 @@ internal enum class PaintingMode(
 }
 
 @Immutable
-internal data class PaintObject(
-    val lines: ImmutableList<Line>,
+internal data class PaintObjectPresentation(
+    val lines: ImmutableList<LinePresentation>,
     val color: Color,
     val strokeWidth: Dp,
     val paintingMode: PaintingMode,
@@ -83,7 +88,7 @@ internal data class PaintObject(
 
 
 @Immutable
-internal data class Line(
+internal data class LinePresentation(
     val start: Offset,
     val end: Offset,
 )
